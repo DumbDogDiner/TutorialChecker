@@ -1,4 +1,10 @@
 kokumaji/tutorialchecker/listeners/BindingListener.class
 kokumaji/tutorialchecker/commands/TCheckerCommand.class
+kokumaji/tutorialchecker/util/SectionCache.class
 kokumaji/tutorialchecker/TutorialChecker.class
+kokumaji/tutorialchecker/util/PlayerCache.class
+kokumaji/tutorialchecker/listeners/PlayerJoinLeaveListener.class
 kokumaji/tutorialchecker/util/PlayerConfig.class
+kokumaji/tutorialchecker/util/CommandCache.class
+kokumaji/tutorialchecker/util/StringFormatting.class
+kokumaji/tutorialchecker/util/MojangRequest.class

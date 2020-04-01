@@ -1,6 +1,10 @@
 package kokumaji.tutorialchecker.listeners;
 
 import kokumaji.tutorialchecker.TutorialChecker;
+import kokumaji.tutorialchecker.util.CommandCache;
+import kokumaji.tutorialchecker.util.PlayerCache;
+import kokumaji.tutorialchecker.util.SectionCache;
+import kokumaji.tutorialchecker.util.StringFormatting;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
@@ -46,28 +50,32 @@ public class BindingListener implements Listener {
         if(e.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Block clickedBlock = e.getClickedBlock();
 
+            if(clickedBlock == null) return;
             if(Arrays.asList(buttonTypes).contains(clickedBlock.getType()) || Arrays.asList(signTypes).contains(clickedBlock.getType())) {
-                if(TutorialChecker.isCached(ePlayer)) {
+                if(CommandCache.isCached(ePlayer)) {
                     if(!ePlayer.hasPermission("tutorialchecker.bind")) return;
-                    if(TutorialChecker.isSection(clickedBlock.getLocation())) {
+                    if(SectionCache.isSection(clickedBlock.getLocation())) {
                         ePlayer.sendMessage(ChatColor.RED + "Section already exists. Either edit or remove this section!");
-                        TutorialChecker.removeCached(ePlayer);
+                        CommandCache.removeCached(ePlayer);
                         return;
                     }
 
-                    String sectionID = TutorialChecker.getCachedID(ePlayer);
+                    String sectionID = CommandCache.getCachedID(ePlayer);
 
-                    String confirmMessage = String.format("\n%s+%2s%3sAdded new tutorial section!%4s%5s", ChatColor.DARK_GREEN, ChatColor.GREEN, ChatColor.BOLD, ChatColor.GRAY, TutorialChecker.beautifyLocation(clickedBlock.getLocation()));
+                    String confirmMessage = String.format("\n%s+%2s%3sAdded new tutorial section!%4s%5s", ChatColor.DARK_GREEN, ChatColor.GREEN, ChatColor.BOLD, ChatColor.GRAY, StringFormatting.beautifyLocation(clickedBlock.getLocation()));
                     TextComponent openConfigurator = new TextComponent("§8[Configure Section]\n");
-                    openConfigurator.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tcheck modify " + sectionID));
+                    openConfigurator.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tcheck sections modify " + sectionID));
 
                     ePlayer.sendMessage(confirmMessage);
                     ePlayer.spigot().sendMessage(openConfigurator);
-                    TutorialChecker.removeCached(ePlayer);
-                    TutorialChecker.cacheSection(clickedBlock.getLocation(), sectionID);
+                    CommandCache.removeCached(ePlayer);
+                    SectionCache.cacheSection(clickedBlock.getLocation(), sectionID);
 
 
                     TutorialChecker.getPlugin().getConfig().set("sections." + sectionID + ".displayname", sectionID);
+                    TutorialChecker.getPlugin().getConfig().set("sections." + sectionID + ".playEffect", true);
+                    TutorialChecker.getPlugin().getConfig().set("sections." + sectionID + ".playSound", true);
+
                     TutorialChecker.getPlugin().getConfig().set("sections." + sectionID + ".loc.world", clickedBlock.getLocation().getWorld().getName());
                     TutorialChecker.getPlugin().getConfig().set("sections." + sectionID + ".loc.x", clickedBlock.getLocation().getX());
                     TutorialChecker.getPlugin().getConfig().set("sections." + sectionID + ".loc.y", clickedBlock.getLocation().getY());
@@ -78,28 +86,32 @@ public class BindingListener implements Listener {
                 } else {
 
 
-                    if(TutorialChecker.isSection(clickedBlock.getLocation())) {
-                        String sectionName = TutorialChecker.getSectionName(clickedBlock.getLocation());
+                    if(SectionCache.isSection(clickedBlock.getLocation())) {
+                        String sectionID = SectionCache.getSectionName(clickedBlock.getLocation());
+                        String sectionName = TutorialChecker.getPlugin().getConfig().getString("sections." + sectionID + ".displayname");
 
-                        if(!TutorialChecker.playerClearedSection(ePlayer, sectionName)) {
-                            ePlayer.playSound(ePlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.2f, 1f);
-
-                            ePlayer.spawnParticle(Particle.VILLAGER_HAPPY, ePlayer.getLocation(), 20, 0.5, 0.5, 0.5);
+                        if(!PlayerCache.playerClearedSection(ePlayer.getUniqueId(), sectionID)) {
+                            if(TutorialChecker.getPlugin().getConfig().getBoolean("sections." + sectionID + ".playSound")) {
+                                ePlayer.playSound(ePlayer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.2f, 1f);
+                            }
+                            if(TutorialChecker.getPlugin().getConfig().getBoolean("sections." + sectionID + ".playEffect")) {
+                                ePlayer.spawnParticle(Particle.VILLAGER_HAPPY, ePlayer.getLocation(), 20, 0.5, 0.5, 0.5);
+                            }
 
                             String sectionFinished = "\n§a§lFinished Section§6 " + sectionName + "§a§l!";
                             ePlayer.sendMessage(sectionFinished);
 
-                            TutorialChecker.addCleared(ePlayer, sectionName);
+                            PlayerCache.addCleared(ePlayer.getUniqueId(), sectionID);
                         } else {
-                            ePlayer.playSound(ePlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.2f, 0.3f);
+                            if(TutorialChecker.getPlugin().getConfig().getBoolean("sections." + sectionID + ".playSound")) {
+                                ePlayer.playSound(ePlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.2f, 0.3f);
+                            }
 
                             String sectionAlreadyCleared = "§c§lYou already read this section!";
 
                             ePlayer.sendMessage(sectionAlreadyCleared);
                         }
 
-
-                        return;
                     }
 
                 }

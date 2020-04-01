@@ -7,6 +7,6 @@ commands:
   tutorialchecker:
     usage: §7/tutorialchecker <Argument 1> [<Argument 2> | <Player>] [<Argument 3>]
     description: Main command. For more details please use /tutorialchecker help
-    aliases: [tcheck, tchecker, tutorialcheck]
+    aliases: [tcheck, tchecker, tutorialcheck, tutcheck]
     permission: tutorialchecker.command
     permission-message: §cYou don't have access to this command
