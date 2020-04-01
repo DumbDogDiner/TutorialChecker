@@ -204,7 +204,7 @@ public class TCheckerCommand implements CommandExecutor, TabCompleter, Listener 
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (e.getInventory().getSize() != 9 && e.getView().getTitle().equals("Edit Section")) {
+        if (e.getInventory().getSize() != 9 && !e.getView().getTitle().equals("Edit Section")) {
             return;
         }
         if (e.getClick().equals(ClickType.NUMBER_KEY)){
